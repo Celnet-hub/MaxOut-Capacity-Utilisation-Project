@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Boolean, Date
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
-from config.db import Base 
+from middleware.config.db import Base 
 
 
 class Employee(Base):
@@ -11,7 +11,7 @@ class Employee(Base):
     first_name = Column(String, nullable=False)
     last_name = Column(String, nullable=False)
     phone_number = Column(String, nullable=False)
-    email = Column(String, nullable=False, unique=True)
+    email = Column(String, nullable=False, unique=False) # in production email should be unique
     department = Column(String, nullable=False)
     status = Column(String, nullable=False) # e.g., 'Active', 'Terminated'
     employment_date = Column(Date, nullable=False)

@@ -9,8 +9,6 @@ class TelemetryCreate(BaseModel):
     This defines the EXACT JSON payload we expect from the Netboss Simulator.
     """
     circuit_id: str = Field(..., description="The unique CID of the customer product", example="CID-BAR-10023")
-    pop: str = Field(..., description="describes the POP the customer is connecting to", example="Barnet")
-    network_device: str = Field(..., description="The switch the customer connecting from", example="GB-BARNET-SW-001")
     utilization_mbps: float = Field(..., description="Current bandwidth utilization in Mbps", ge=0.0, example=95.5)
     timestamp: Optional[datetime] = Field(
         default_factory=lambda: datetime.now(timezone.utc), 
