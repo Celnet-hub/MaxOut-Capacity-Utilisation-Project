@@ -1,6 +1,6 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Boolean, Date
 from sqlalchemy.orm import relationship
-from datetime import datetime
+from datetime import datetime, timezone
 from middleware.config.db import Base 
 
 
@@ -75,6 +75,9 @@ class MaxOutEvent(Base):
     id = Column(Integer, primary_key=True, index=True)
     product_id = Column(Integer, ForeignKey("customer_products.id"), nullable=False)
     notification_sent = Column(Boolean, default=False, nullable=False)
-    timestamp = Column(DateTime, default=datetime.utcnow, nullable=False)
+    
+    # UPDATED: timezone=True tells Postgres to handle timezones properly,
+    # and the default uses the modern Python datetime approach.
+    timestamp = Column(DateTime(timezone=True), default=lambda: datetime.now(timezone.utc), nullable=False)
     
     product = relationship("CustomerProduct", back_populates="max_out_events")
