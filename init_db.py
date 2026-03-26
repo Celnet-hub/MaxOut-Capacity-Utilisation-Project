@@ -1,6 +1,10 @@
+"""_summary_
+This scripts connects to the database and creates the neccessary tables.
+
+- CRITICAL: You must import your models here, even if you don't use them directly in this script. This registers them with the 'Base' metadata so SQLAlchemy knows what tables to create.
+"""
+
 from middleware.config.db import db_engine, Base
-# CRITICAL: You must import your models here, even if you don't use them directly in this script.
-# This registers them with the 'Base' metadata so SQLAlchemy knows what tables to create.
 from middleware.models import database 
 
 def create_database_tables():
