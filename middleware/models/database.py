@@ -1,7 +1,7 @@
 from sqlalchemy import Column, Integer, String, Float, DateTime, ForeignKey, Boolean, Date
 from sqlalchemy.orm import relationship
 from datetime import datetime, timezone
-from middleware.config.db import Base 
+from config.db import Base 
 
 
 class Employee(Base):
