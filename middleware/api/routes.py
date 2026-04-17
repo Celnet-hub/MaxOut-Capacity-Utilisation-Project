@@ -1,34 +1,27 @@
-from fastapi import APIRouter, Depends, HTTPException, status
-from sqlalchemy.orm import Session
-from middleware.config.db import get_db
+from fastapi import APIRouter, status
+from fastapi import APIRouter, status, BackgroundTasks
 from middleware.schemas.netboss_network import TelemetryCreate, TelemetryResponse
-from middleware.models.database import CustomerProduct
+from middleware.services.alerts import async_processing
 
 router = APIRouter(tags=["Telemetry"])
 
 
 @router.post("/telemetry", response_model=TelemetryResponse, status_code=status.HTTP_201_CREATED)
-def ingest_telemetry(payload: TelemetryCreate, db: Session = Depends(get_db)):
-    """
-    Ingests simulated network telemetry data from the Netboss Mock.
-    """
-    # Validate the Circuit ID against our database
-    product = db.query(CustomerProduct).filter(
-        CustomerProduct.cid == payload.circuit_id).first()
+def ingest_telemetry(payload: TelemetryCreate, background_tasks: BackgroundTasks):
 
-    if not product:
-        # If the simulator sends a fake CID, reject it immediately
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail=f"Circuit ID {payload.circuit_id} not found in database."
-        )
+    """
+    Ingests telemetry. Instantly returns ACK to prevent Netboss from blocking.
+    Actual processing happens in the background.
+    """
 
-    threshold = product.provisioned_bandwidth_mbps * 0.95
-    if payload.utilization_mbps >= threshold:
-        print(
-            f"⚠️ WARNING: {payload.circuit_id} is maxing out! ({payload.utilization_mbps} Mbps / {product.provisioned_bandwidth_mbps} Mbps)")
+    # Hand the raw data off to background worker
+    background_tasks.add_task(
+        async_processing, 
+        circuit_id=payload.circuit_id, 
+        current_utilization=payload.utilization_mbps
+    )
 
     return TelemetryResponse(
-        message="Telemetry ingested successfully",
+        message="Alert ingested successfully",
         recorded_utilization=payload.utilization_mbps
     )
