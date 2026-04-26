@@ -2,6 +2,9 @@ import random
 from datetime import date, timedelta
 from middleware.config.db import SessionLocal 
 from middleware.models.database import Employee, CustomerAccount, Contact, CustomerProduct
+from log_config import get_logger
+
+logger = get_logger(__name__)
 
 # The restricted email list per your instructions
 ALLOWED_EMAILS = ["dubemnwabuisi@gmail.com", "dubemcn@outlook.com"]
@@ -19,10 +22,10 @@ def seed_database():
     try:
         # Fail-safe: Check if we already have data
         if db.query(Employee).first():
-            print("Database is already seeded. Drop tables if you want a fresh start.")
+            logger.info("Database is already seeded. Drop tables if you want a fresh start.")
             return
 
-        print("Seeding database with mock data...")
+        logger.info("Seeding database with mock data...")
 
         # Create Employees (Account Managers & CX Managers)
         am_1 = Employee(
@@ -92,12 +95,12 @@ def seed_database():
         db.add_all([prod_1, prod_2])
         db.commit()
 
-        print("Database seeded successfully!")
-        print(f"Use this CID for your API testing: {prod_1.cid} (Provisioned: {prod_1.provisioned_bandwidth_mbps} Mbps)")
+        logger.info("Database seeded successfully!")
+        logger.info(f"Use this CID for your API testing: {prod_1.cid} (Provisioned: {prod_1.provisioned_bandwidth_mbps} Mbps)")
 
     except Exception as e:
         db.rollback()
-        print(f"Error seeding database: {e}")
+        logger.error(f"Error seeding database: {e}")
     finally:
         db.close()
 

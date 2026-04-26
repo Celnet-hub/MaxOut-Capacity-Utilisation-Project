@@ -6,16 +6,19 @@ This scripts connects to the database and creates the neccessary tables.
 
 from middleware.config.db import db_engine, Base
 from middleware.models import database 
+from log_config import get_logger
+
+logger = get_logger(__name__)
 
 def create_database_tables():
-    print("Attempting to connect to PostgreSQL...")
+    logger.info("Attempting to connect to PostgreSQL...")
     try:
         # This single line connects to the DB and creates all tables defined in your models
         Base.metadata.create_all(bind=db_engine)
-        print("Success! All tables have been created in the database.")
+        logger.info("Success! All tables have been created in the database.")
     except Exception as e:
-        print("Failed to connect or create tables. See error below:")
-        print(e)
+        logger.error("Failed to connect or create tables. See error below:")
+        logger.error(e)
 
 if __name__ == "__main__":
     create_database_tables()

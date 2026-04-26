@@ -1,9 +1,8 @@
-from fastapi import APIRouter, status
 from fastapi import APIRouter, status, BackgroundTasks
 from middleware.schemas.netboss_network import TelemetryCreate, TelemetryResponse
-from middleware.services.alerts import async_processing
+from middleware.services.process_alerts import async_processing
 
-router = APIRouter(tags=["Telemetry"])
+router = APIRouter(tags=["Alert ingestion"])
 
 
 @router.post("/telemetry", response_model=TelemetryResponse, status_code=status.HTTP_201_CREATED)
