@@ -2,14 +2,13 @@ from middleware.config.db import SessionLocal # Import the session factory direc
 from middleware.models.database import MaxOutEvent, CustomerProduct
 from middleware.config.env import settings
 import time
+from middleware.services.emailing import send_capacity_alert_email
 from log_config import get_logger
 
 logger = get_logger(__name__)
 
-circuit_state_cache = {}
 
-def send_email(customer_cid: str, bandwidth: float):
-    return True
+
 
 def async_processing(circuit_id: str, current_utilization: float):
     """
@@ -26,6 +25,29 @@ def async_processing(circuit_id: str, current_utilization: float):
             logger.error(f"[BACKGROUND ERROR] CID {circuit_id} not found")
             return
 
+        # Extract customer details
+        account = product.account
+        account_name = account.account_name
+        
+        # Use the first contact available
+        contact = account.contacts[0] if account.contacts else None
+        if not contact:
+            logger.error(f"[BACKGROUND ERROR] No contacts found for account {account_name}")
+            return
+            
+        recipient_email = contact.email_address
+        customer_name = f"{contact.first_name} {contact.last_name}"
+
+        # Account Manager details
+        am = account.account_manager
+        am_name = f"{am.first_name} {am.last_name}" if am else "Unknown"
+        am_email = am.email if am else ""
+
+        # CX Manager details
+        cx = account.cx_manager
+        cx_name = f"{cx.first_name} {cx.last_name}" if cx else "Unknown"
+        cx_email = cx.email if cx else ""
+
         # Verify the threshold
         threshold = product.provisioned_bandwidth_mbps * settings.ALERT_THRESHOLD_PCT
 
@@ -40,7 +62,17 @@ def async_processing(circuit_id: str, current_utilization: float):
             logger.info("[DB WRITE] Event saved to PostgreSQL.")
 
             # Send Email Notification
-            stat = send_email(customer_cid=circuit_id, bandwidth=product.provisioned_bandwidth_mbps)
+            stat = send_capacity_alert_email(
+                recipient_email=recipient_email,
+                customer_name=customer_name,
+                circuit_id=circuit_id,
+                provisioned_bandwidth=product.provisioned_bandwidth_mbps,
+                account_name=account_name,
+                am_name=am_name,
+                am_email=am_email,
+                cx_name=cx_name,
+                cx_email=cx_email
+            )
             if stat:
                 new_event.notification_sent = True
                 db.commit()
