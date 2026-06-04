@@ -5,10 +5,11 @@ This scripts connects to the database and creates the neccessary tables.
 """
 
 from middleware.config.db import db_engine, Base
-from middleware.models import database 
+from middleware.models import database  # noqa: F401
 from log_config import get_logger
 
 logger = get_logger(__name__)
+
 
 def create_database_tables():
     logger.info("Attempting to connect to PostgreSQL...")
@@ -19,6 +20,7 @@ def create_database_tables():
     except Exception as e:
         logger.error("Failed to connect or create tables. See error below:")
         logger.error(e)
+
 
 if __name__ == "__main__":
     create_database_tables()

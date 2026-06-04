@@ -5,9 +5,10 @@ from middleware.services.process_alerts import async_processing
 router = APIRouter(tags=["Alert ingestion"])
 
 
-@router.post("/telemetry", response_model=TelemetryResponse, status_code=status.HTTP_201_CREATED)
+@router.post(
+    "/telemetry", response_model=TelemetryResponse, status_code=status.HTTP_201_CREATED
+)
 def ingest_telemetry(payload: TelemetryCreate, background_tasks: BackgroundTasks):
-
     """
     Ingests telemetry. Instantly returns ACK to prevent Netboss from blocking.
     Actual processing happens in the background.
@@ -15,12 +16,12 @@ def ingest_telemetry(payload: TelemetryCreate, background_tasks: BackgroundTasks
 
     # Hand the raw data off to background worker
     background_tasks.add_task(
-        async_processing, 
-        circuit_id=payload.circuit_id, 
-        current_utilization=payload.utilization_mbps
+        async_processing,
+        circuit_id=payload.circuit_id,
+        current_utilization=payload.utilization_mbps,
     )
 
     return TelemetryResponse(
         message="Alert ingested successfully",
-        recorded_utilization=payload.utilization_mbps
+        recorded_utilization=payload.utilization_mbps,
     )

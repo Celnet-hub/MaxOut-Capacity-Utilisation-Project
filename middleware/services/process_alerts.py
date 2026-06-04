@@ -1,13 +1,10 @@
-from middleware.config.db import SessionLocal # Import the session factory directly
+from middleware.config.db import SessionLocal  # Import the session factory directly
 from middleware.models.database import MaxOutEvent, CustomerProduct
 from middleware.config.env import settings
-import time
 from middleware.services.emailing import send_capacity_alert_email
 from log_config import get_logger
 
 logger = get_logger(__name__)
-
-
 
 
 def async_processing(circuit_id: str, current_utilization: float):
@@ -16,11 +13,13 @@ def async_processing(circuit_id: str, current_utilization: float):
     """
     db = SessionLocal()
 
-    logger.info('Begining Asynch processing...................')
+    logger.info("Begining Asynch processing...................")
     try:
         # get customer product
-        product = db.query(CustomerProduct).filter(CustomerProduct.cid == circuit_id).first()
-        logger.info(f'Product Details: {product}')
+        product = (
+            db.query(CustomerProduct).filter(CustomerProduct.cid == circuit_id).first()
+        )
+        logger.info(f"Product Details: {product}")
         if not product:
             logger.error(f"[BACKGROUND ERROR] CID {circuit_id} not found")
             return
@@ -28,13 +27,15 @@ def async_processing(circuit_id: str, current_utilization: float):
         # Extract customer details
         account = product.account
         account_name = account.account_name
-        
+
         # Use the first contact available
         contact = account.contacts[0] if account.contacts else None
         if not contact:
-            logger.error(f"[BACKGROUND ERROR] No contacts found for account {account_name}")
+            logger.error(
+                f"[BACKGROUND ERROR] No contacts found for account {account_name}"
+            )
             return
-            
+
         recipient_email = contact.email_address
         customer_name = f"{contact.first_name} {contact.last_name}"
 
@@ -52,11 +53,13 @@ def async_processing(circuit_id: str, current_utilization: float):
         threshold = product.provisioned_bandwidth_mbps * settings.ALERT_THRESHOLD_PCT
 
         if current_utilization >= threshold:
-            logger.info(f"[ALERT RECEIVED] Confirmed Max-Out for {circuit_id}! Processing immediately.")
+            logger.info(
+                f"[ALERT RECEIVED] Confirmed Max-Out for {circuit_id}! Processing immediately."
+            )
 
             # Save event to db.
             new_event = MaxOutEvent(product_id=product.id, notification_sent=False)
-            logger.info(f'New Event: {new_event}')
+            logger.info(f"New Event: {new_event}")
             db.add(new_event)
             db.commit()
             logger.info("[DB WRITE] Event saved to PostgreSQL.")
@@ -71,14 +74,18 @@ def async_processing(circuit_id: str, current_utilization: float):
                 am_name=am_name,
                 am_email=am_email,
                 cx_name=cx_name,
-                cx_email=cx_email
+                cx_email=cx_email,
             )
             if stat:
                 new_event.notification_sent = True
                 db.commit()
-                logger.info("[DB WRITE] Event updated with notification sent to PostgreSQL.")
+                logger.info(
+                    "[DB WRITE] Event updated with notification sent to PostgreSQL."
+                )
         else:
-            logger.info(f"[NORMAL OPERATION] {circuit_id} is operating within normal parameters ({current_utilization} Mbps).")
+            logger.info(
+                f"[NORMAL OPERATION] {circuit_id} is operating within normal parameters ({current_utilization} Mbps)."
+            )
 
     except Exception as e:
         logger.error(f"[SYSTEM ERROR] Failed to process alert: {e}")

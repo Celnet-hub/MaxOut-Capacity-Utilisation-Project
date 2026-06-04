@@ -7,28 +7,31 @@ from log_config import get_logger
 
 logger = get_logger(__name__)
 
+
 def send_capacity_alert_email(
-    recipient_email: str, 
-    customer_name: str, 
-    circuit_id: str, 
+    recipient_email: str,
+    customer_name: str,
+    circuit_id: str,
     provisioned_bandwidth: float,
     account_name: str,
     am_name: str,
     am_email: str,
     cx_name: str,
-    cx_email: str
+    cx_email: str,
 ):
     """
     Constructs and sends an SMTP email alert.
     """
     msg = EmailMessage()
-    msg['Subject'] = f"URGENT: Action Required - Network Capacity Alert for {circuit_id}"
-    msg['From'] = settings.SMTP_USERNAME
-    msg['To'] = recipient_email
-    
+    msg["Subject"] = (
+        f"URGENT: Action Required - Network Capacity Alert for {circuit_id}"
+    )
+    msg["From"] = settings.SMTP_USERNAME
+    msg["To"] = recipient_email
+
     cc_emails = [email for email in [am_email, cx_email] if email]
     if cc_emails:
-        msg['Cc'] = ", ".join(cc_emails)
+        msg["Cc"] = ", ".join(cc_emails)
 
     # The Plain Text Email Body (Fallback)
     text_body = textwrap.dedent(f"""\
@@ -47,7 +50,7 @@ def send_capacity_alert_email(
     Sincerely,
     Network Operations Center
     """)
-    
+
     # The HTML Email Body (Primary)
     html_body = textwrap.dedent(f"""\
     <html>
@@ -71,7 +74,7 @@ def send_capacity_alert_email(
     """)
 
     msg.set_content(text_body)
-    msg.add_alternative(html_body, subtype='html')
+    msg.add_alternative(html_body, subtype="html")
 
     try:
         logger.info(f"Connecting to {settings.SMTP_SERVER}...")
@@ -82,7 +85,7 @@ def send_capacity_alert_email(
 
         logger.info(f"Alert successfully sent to {recipient_email}")
         return True
-    
+
     except Exception as e:
         logger.error(f"Failed to send email: {e}")
         return False

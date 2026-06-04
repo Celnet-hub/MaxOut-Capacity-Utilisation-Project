@@ -8,9 +8,10 @@ SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=db_engine)
 
 Base = declarative_base()
 
+
 def get_db():
-    db = SessionLocal()   # create DB session
+    db = SessionLocal()  # create DB session
     try:
-        yield db          # pause, give `db` to the caller of the db session
+        yield db  # pause, give `db` to the caller of the db session
     finally:
-        db.close()        # resume here after the caller is finished
+        db.close()  # resume here after the caller is finished

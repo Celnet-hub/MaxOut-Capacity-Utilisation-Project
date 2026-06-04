@@ -8,20 +8,29 @@ class TelemetryCreate(BaseModel):
     """
     This defines the EXACT JSON payload we expect from the Netboss Simulator.
     """
-    circuit_id: str = Field(..., description="The unique CID of the customer product", example="CID-BAR-10023")
-    utilization_mbps: float = Field(..., description="Current bandwidth utilization in Mbps", ge=0.0, example=95.5)
+
+    circuit_id: str = Field(
+        ...,
+        description="The unique CID of the customer product",
+        example="CID-BAR-10023",
+    )
+    utilization_mbps: float = Field(
+        ..., description="Current bandwidth utilization in Mbps", ge=0.0, example=95.5
+    )
     timestamp: Optional[datetime] = Field(
-        default_factory=lambda: datetime.now(timezone.utc), 
-        description="Time the metric was recorded"
+        default_factory=lambda: datetime.now(timezone.utc),
+        description="Time the metric was recorded",
     )
 
     class Config:
         from_attributes = True
 
+
 class TelemetryResponse(BaseModel):
     """
     This defines what our API sends BACK to the simulator after successful ingestion.
     """
+
     status: str = Field(default="success", example="success")
     message: str = Field(..., example="Telemetry ingested successfully")
     recorded_utilization: float
@@ -33,6 +42,6 @@ class TelemetryResponse(BaseModel):
 #     product_id: int
 #     notification_sent: bool
 #     timestamp: datetime
-    
+
 #     class Config:
 #         from_attributes = True
