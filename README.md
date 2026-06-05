@@ -20,19 +20,22 @@ This project provides an automated solution to monitor network telemetry, identi
 
 ```
 MACOUT_CAPACITY/
+├── .github/
+│   └── workflows/
+│       └── ci.yml            # GitHub Actions CI workflow
 ├── middleware/
 │   ├── __init__.py
 │   ├── main.py               # The FastAPI application instance & entry point
 │   ├── config/
 │   │   ├── __init__.py
-│   │   ├── config.py         # Environment variables (e.g., DB connection string)
-│   │   └── database.py       # SQLAlchemy Engine and SessionLocal setup
+│   │   ├── db.py             # SQLAlchemy Engine and SessionLocal setup
+│   │   └── env.py            # Environment variables configuration
 │   ├── models/
 │   │   ├── __init__.py
-│   │   └── network.py        # SQLAlchemy classes (Customer, Telemetry, etc.)
+│   │   └── database.py       # SQLAlchemy classes (Customer, Telemetry, etc.)
 │   ├── schemas/
 │   │   ├── __init__.py
-│   │   └── network.py        # Pydantic models (for validating incoming API JSON)
+│   │   └── netboss_network.py# Pydantic models for incoming API JSON validation
 │   ├── api/
 │   │   ├── __init__.py
 │   │   └── routes.py         # The actual API endpoints (e.g., POST /telemetry)
@@ -43,12 +46,16 @@ MACOUT_CAPACITY/
 ├── network_utilisation/
 │   ├── env.py                # Environment configuration for the simulator
 │   └── netboss_mock.py       # The standalone Python script generating mock data
+├── tests/
+│   ├── conftest.py           # Pytest configurations and client fixtures
+│   └── test_api.py           # Unit tests for FastAPI endpoints
 ├── log_config.py             # Centralized logging configuration
 ├── init_db.py                # Database initialization script
 ├── seed_db.py                # Database seeding script
 ├── .gitignore
 ├── Makefile
-└── requirements.txt
+├── requirements.txt          # Production dependencies
+└── requirements-dev.txt      # Development & testing dependencies
 ```
 
 ## Development Workflow History
@@ -65,6 +72,8 @@ MACOUT_CAPACITY/
 - Refactor telemetry ingestion to use background processing
 - Set up centralized logging across the application
 - Upgrade email system to support structured HTML templates
+- Implement Continuous Integration (CI) with Ruff linter/formatter and Pytest suite
+- Configure GitHub Actions pipeline for automated checks on push and pull requests
 
 ## Makefile Usage
 
@@ -78,18 +87,24 @@ Common commands:
 
 ```bash
 make install
+make install-dev
 make editable
 make init-db
 make seed-db
 make run-api
 make dev
+make lint
+make test
 ```
 
 Notes:
 
-- `make install` installs dependencies from `requirements.txt` into `.venv`.
+- `make install` installs production dependencies from `requirements.txt` into `.venv`.
+- `make install-dev` installs production and development/testing dependencies.
 - `make editable` runs `pip install -e .` so package imports work from any directory.
 - `make dev` starts `uvicorn` with `--reload` for development.
+- `make lint` runs Ruff check and format check on the codebase.
+- `make test` runs the Pytest test suite.
 
 ## Future Tasks
 
