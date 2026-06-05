@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime, timezone
 from typing import Optional
 
@@ -12,18 +12,20 @@ class TelemetryCreate(BaseModel):
     circuit_id: str = Field(
         ...,
         description="The unique CID of the customer product",
-        example="CID-BAR-10023",
+        json_schema_extra={"example": "CID-BAR-10023"},
     )
     utilization_mbps: float = Field(
-        ..., description="Current bandwidth utilization in Mbps", ge=0.0, example=95.5
+        ...,
+        description="Current bandwidth utilization in Mbps",
+        ge=0.0,
+        json_schema_extra={"example": 95.5},
     )
     timestamp: Optional[datetime] = Field(
         default_factory=lambda: datetime.now(timezone.utc),
         description="Time the metric was recorded",
     )
 
-    class Config:
-        from_attributes = True
+    model_config = ConfigDict(from_attributes=True)
 
 
 class TelemetryResponse(BaseModel):
@@ -31,8 +33,10 @@ class TelemetryResponse(BaseModel):
     This defines what our API sends BACK to the simulator after successful ingestion.
     """
 
-    status: str = Field(default="success", example="success")
-    message: str = Field(..., example="Telemetry ingested successfully")
+    status: str = Field(default="success", json_schema_extra={"example": "success"})
+    message: str = Field(
+        ..., json_schema_extra={"example": "Telemetry ingested successfully"}
+    )
     recorded_utilization: float
 
 
